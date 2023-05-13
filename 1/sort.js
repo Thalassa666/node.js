@@ -1,57 +1,70 @@
-const fs = require('fs');
-const path = require('path');
+const fs = require('fs')
+const path = require('path')
 
-function mkDir(folderPath, folderName){
-    return new Promise(resolve => {
-        fs.mkdir(folderPath, { recursive: true }, (err) => {
-            if (err) throw err;
-            console.log('Directory %s was created', folderName);
-            resolve('Directory %s was created', folderName);
-        });
-    });
-}
-
-function moveFile(fileFrom, fileTo, file){
-    return new Promise(resolve => {
-        fs.access(fileFrom, fs.constants.F_OK, (err) => {
-            if (err) throw err
-            fs.rename(fileFrom, fileTo, function (err) {
-                if (err) throw err
-                console.log('File %s was copied', file);
-                resolve('File %s was copied', file);
-            });
-        });       
-    });
-}
-
-async function sortFiles(input, output, clear) {
-    try {
-        const files = fs.readdirSync(input);
-
-        for(const file of files) {
-            const localBase = path.join(input, file);
-            const state = fs.statSync(localBase);
-
-            if (state.isDirectory()) {
-                await sortFiles(localBase, output, clear);
-            } else {
-                const folderName = file.charAt(0);
-                const folderPath = path.join(output, folderName);
-                const fileFrom = localBase;
-                const fileTo = path.join(folderPath, file);
-
-                await mkDir(folderPath, folderName);
-                await moveFile(fileFrom, fileTo, file);
-            }
-        }
-
-        if(clear) {
-            fs.rmdirSync(input);
-        }
-
-    } catch (e) {
-        console.error('outer', e.message);
+function createDir(path, callback) {
+  fs.access(path, fs.constants.F_OK, err => {
+    if (!err) {
+      const err = new Error('Directory exist')
+      err.code = 'EEXIST'
+      return callback(err)
     }
+
+    fs.mkdir(path, err => {
+      if (err) {
+        return callback(err)
+      }
+
+      callback(null)
+    })
+  })
 }
 
-module.exports = sortFiles;
+function readDir(dirpath, callback) {
+  let results = []
+  fs.readdir(dirpath, (err, files) => {
+    if (err) {
+      callback(err, null)
+    }
+
+    let counter = files.length
+
+    if (counter === 0) {
+      return callback(null, results)
+    }
+
+    files.forEach(file => {
+      const filepath = path.join(dirpath, file)
+
+      fs.stat(filepath, (err, stats) => {
+        if (err) {
+          callback(err, null)
+        }
+
+        if (stats.isDirectory()) {
+          readDir(filepath, (err, res) => {
+            if (err) {
+              callback(err, null)
+            }
+
+            results = results.concat(res)
+
+            if (--counter === 0) {
+              callback(null, results)
+            }
+          })
+        } else {
+          results.push({ name: file, path: filepath })
+
+          if (--counter === 0) {
+            callback(null, results)
+          }
+        }
+      })
+    })
+  })
+}
+
+module.exports = {
+  create: createDir,
+  read: readDir
+}

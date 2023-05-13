@@ -12,6 +12,8 @@
   "author": "Thalassa",
   "license": "ISC",
   "dependencies": {
-    "eslint-config-standard": "^17.0.0"
+    "dotenv": "^16.0.3",
+    "eslint-config-standard": "^17.0.0",
+    "yargs": "^17.7.2"
   }
 }
