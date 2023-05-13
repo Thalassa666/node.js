@@ -1,29 +1,35 @@
 const http = require('http');
 
-const argv = require('yargs')
-    .example('node index.js --interval 1 --time 5')
-    .demandOption(['interval', 'time'])
-    .argv;
+function getCurrentDateTime() {
+  return new Date().toUTCString();
+}
 
-const PORT = 3000;
+function handleRequest(req, res) {
+  if (req.method === 'GET' && req.url === '/') {
+    res.writeHead(200, { 'Content-Type': 'text/plain' });
+    res.end(`Текущая дата и время: ${getCurrentDateTime()}`);
+  } else {
+    res.writeHead(404, { 'Content-Type': 'text/plain' });
+    res.end('Страница не найдена');
+  }
+}
 
-const startServer = (interval, time) => {
-    console.log(`Server start on port ${PORT}`);
-    http.createServer((req, res) => {
-        if(req.url === '/') {
-            let intervalId = setInterval(() => {
-                console.log(new Date().toUTCString())
-            }, interval * 1000);
-    
-            setTimeout(() => {
-                clearInterval(intervalId);
-                res.writeHead(200, {'Content-Type': 'text/html'});
-                console.log('STOP: ',new Date().toUTCString());
-                res.write(new Date().toUTCString());
-                res.end();
-            }, time * 1000);
-        }
-    }).listen(PORT);
-};
+const server = http.createServer(handleRequest);
 
-startServer(argv.interval, argv.time);
+const consoleOutputInterval = process.env.CONSOLE_OUTPUT_INTERVAL || 1000;
+
+const stopConsoleOutputTime = process.env.STOP_CONSOLE_OUTPUT_TIME || 10000;
+
+server.listen(3000, 'localhost', () => {
+  console.log('Сервер запущен!');
+
+  const consoleOutputIntervalId = setInterval(() => {
+    console.log(`Текущая дата и время (UTC): ${getCurrentDateTime()}`);
+  }, consoleOutputInterval);
+
+  setTimeout(() => {
+    clearInterval(consoleOutputIntervalId); 
+    server.close();
+    console.log('Вывод в консоль и сервер завершены.');
+  }, stopConsoleOutputTime);
+});
