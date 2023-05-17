@@ -1,0 +1,20 @@
+{
+    "pug": {
+        "viewPath": "./views",
+        "pretty": false,
+        "basedir": "./views",
+        "noCache": true
+    },
+    "session": {
+        "key": "sessionkey",
+        "maxAge": "session",
+        "overwrite": true,
+        "httpOnly": true,
+        "signed": false,
+        "rolling": false,
+        "renew": false
+    },
+    "upload": {
+        "dir": "./public/uploads"
+    }
+}
