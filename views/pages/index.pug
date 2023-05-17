@@ -1,0 +1,31 @@
+extends ../_template
+
+block variables
+  - var title = 'Home page'
+  -
+    var skills = [
+      {
+        "number": skillsData.age,
+        "text": "Возраст начала занятий на скрипке"
+      },
+      {
+        "number": skillsData.concerts,
+        "text": "Концертов отыграл"
+      },
+      {
+        "number": skillsData.cities,
+        "text": "Максимальное число городов в туре"
+      },
+      {
+        "number": skillsData.years,
+        "text": "Лет на сцене в качестве скрипача"
+      }
+    ]
+
+block content
+  include ../common/_header
+  include ../common/_music
+  include ../common/_life
+  include ../common/_product
+  include ../common/_form
+  include ../common/_footer
