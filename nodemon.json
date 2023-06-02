@@ -1,0 +1,8 @@
+{
+    "verbose": true,
+    "ignore": [
+        "*.json",
+        "./public/"
+    ],
+    "execMap": {}
+}
